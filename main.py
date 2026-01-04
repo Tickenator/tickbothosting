@@ -30,7 +30,7 @@ bypass_role_name = "Picture Master"
 # ------------------ Google Sheets ------------------
 
 scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-creds = Credentials.from_service_account_file("/run/secrets/credentials.json", scopes=scopes)
+creds = Credentials.from_service_account_file("/etc/secrets/credentials.json", scopes=scopes)
 client = gspread.authorize(creds)
 
 sheet_id = "1-BlPjtE4QTgrV_wSI7ZB_eNy2g7d1L956mom-aHozEQ"
