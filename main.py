@@ -14,6 +14,7 @@ import webserver
 # Load environment variables
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
+creds_info = os.getenv('GOOGLE_CREDENTIALS_JSON')
 
 # Logging setup
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
@@ -30,7 +31,7 @@ bypass_role_name = "Picture Master"
 # ------------------ Google Sheets ------------------
 
 scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+creds = Credentials.from_service_account_file(creds_info, scopes=scopes)
 client = gspread.authorize(creds)
 
 sheet_id = "1-BlPjtE4QTgrV_wSI7ZB_eNy2g7d1L956mom-aHozEQ"
