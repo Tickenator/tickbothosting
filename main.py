@@ -24,8 +24,11 @@ intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-ANNOUNCE_CHANNEL_ID = 1445557463410671878  # replace with your channel ID
-bypass_role_name = "Picture Master"
+my_chat_id = 1445557463410671878
+spl_chat_id = 240776610276442113
+
+ANNOUNCE_CHANNEL_ID = my_chat_id  # replace with your channel ID
+bypass_role_name = "SPL Host"
 
 # ------------------ Google Sheets ------------------
 
@@ -42,6 +45,7 @@ rawdata_sheet = "SchedulingRawData"
 # ------------------ Commands ------------------
 
 @bot.command()
+@commands.has_any_role("SPL Host", "Raiders", "Ruiners", "Scooters", "Bigs", "Classiest", "Cryonicles", "Sharks", "Tigers", "Tyrants", "Wolfpack")
 async def spladdtime(ctx, *, content: str):
     lines = [line.strip() for line in content.splitlines() if line.strip()]
 
@@ -163,6 +167,7 @@ async def splschedule(ctx):
 
 
 @bot.command()
+@commands.has_role(bypass_role_name)
 async def clearsplschedule(ctx):
     sheet = workbook.worksheet(rawdata_sheet)
 
