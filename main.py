@@ -211,7 +211,7 @@ async def currentsplrecordsheet(ctx, *, content: str):
 
 
 @bot.command()
-@commands.has_any_role("SPL Host", "Raiders", "Ruiners", "Scooters", "Bigs", "Classiest", "Cryonicles", "Sharks", "Tigers", "Tyrants", "Wolfpack")
+@commands.has_any_role("SPL Host", "Team Manager", "Raiders", "Ruiners", "Scooters", "Bigs", "Classiest", "Cryonicles", "Sharks", "Tigers", "Tyrants", "Wolfpack")
 async def splcommands(ctx):
     await ctx.send(
         "**Available Commands:**\n"
