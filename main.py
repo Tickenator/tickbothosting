@@ -199,10 +199,11 @@ async def currentsplrecordsheet(ctx, *, content: str):
 
 
 @bot.command()
+@commands.has_any_role("SPL Host", "Raiders", "Ruiners", "Scooters", "Bigs", "Classiest", "Cryonicles", "Sharks", "Tigers", "Tyrants", "Wolfpack")
 async def splcommands(ctx):
     await ctx.send(
         "**Available Commands:**\n"
-        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'. Example: `Player1 vs. Player2 2024/12/31 7:00 PM +2`\n"
+        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'.\nExample: `Player1 vs. Player2 2024/12/31 7:00 PM +2`\nAnother example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
         "`!splschedule` - Shows the current schedule. There's a 5-minute cooldown, bypassed with the 'SPL Host' role.\n"
         "`!clearsplschedule` - Clears all scheduled times. 'SPL Host' role required.\n"
         "`!currentrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n"
