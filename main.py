@@ -165,6 +165,17 @@ async def splschedule(ctx):
     else:
         await ctx.send("The schedule was updated less than 5 minutes ago. Please wait until " + sheet.cell(1, 6).value + " to use this command again.")
 
+@bot.command()
+@commands.has_role(bypass_role_name)
+async def splmissingtimes(ctx):
+    sheet = workbook.worksheet(verified_times)
+    response = sheet.cell(1, 7).value
+    formatted = response.replace("\\n", "\n")
+
+    if formatted.strip() == "":
+        await ctx.send("There are no missing times!")
+    else:
+        await ctx.send(formatted)
 
 @bot.command()
 @commands.has_role(bypass_role_name)
@@ -206,7 +217,8 @@ async def splcommands(ctx):
         "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'.\nExample: `Player1 vs. Player2 2024/12/31 7:00 PM +2`\nAnother example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
         "`!splschedule` - Shows the current schedule. There's a 5-minute cooldown, bypassed with the 'SPL Host' role.\n"
         "`!clearsplschedule` - Clears all scheduled times. 'SPL Host' role required.\n"
-        "`!currentrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n"
+        "`!currentrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n" \
+        "`!splmissingtimes` - Shows players with missing times. 'SPL Host' role required.\n"
     )
 
 # ------------------ Scheduled Announcements ------------------
