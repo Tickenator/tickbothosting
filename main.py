@@ -161,7 +161,7 @@ async def splschedule(ctx):
         response = sheet.cell(1, 4).value
         formatted = response.replace("\\n", "\n")
 
-        await ctx.send(formatted)
+        await ctx.send(formatted + "\n\n Cooldown timer: " + str(cooldown) + " Last run: " + str(last_run))
     else:
         await ctx.send("The schedule was updated less than 5 minutes ago. Please wait until " + sheet.cell(1, 6).value + " to use this command again.")
 
