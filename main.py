@@ -156,7 +156,7 @@ async def splschedule(ctx):
     target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_name)
 
     if cooldown > last_run or target_role in ctx.author.roles:
-        sheet.update_cell(1, 3, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        sheet.update_cell(1, 3, (datetime.now() - timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S"))
 
         response = sheet.cell(1, 4).value
         formatted = response.replace("\\n", "\n")
