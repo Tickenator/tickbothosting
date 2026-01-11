@@ -27,7 +27,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 my_chat_id = 1445557463410671878
 spl_chat_id = 240776610276442113
 
-ANNOUNCE_CHANNEL_ID = my_chat_id  # replace with your channel ID
+ANNOUNCE_CHANNEL_ID = spl_chat_id  # replace with your channel ID
 bypass_role_name = "SPL Host"
 
 # ------------------ Google Sheets ------------------
@@ -203,6 +203,7 @@ async def clearsplschedule(ctx):
 
 
 @bot.command()
+@commands.has_role(bypass_role_name)
 async def currentsplrecordsheet(ctx, *, content: str):
     sheet = workbook.worksheet(verified_times)
     sheet.update_cell(1, 2, content)
@@ -214,7 +215,7 @@ async def currentsplrecordsheet(ctx, *, content: str):
 async def splcommands(ctx):
     await ctx.send(
         "**Available Commands:**\n"
-        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'.\nExample: `Player1 vs. Player2 2024/12/31 7:00 PM +2`\nAnother example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
+        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'.\n Example: `Player1 vs. Player2 2024/12/31 7:00 PM +2`\n Another example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
         "`!splschedule` - Shows the current schedule. There's a 5-minute cooldown, bypassed with the 'SPL Host' role.\n"
         "`!clearsplschedule` - Clears all scheduled times. 'SPL Host' role required.\n"
         "`!currentrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n" \
