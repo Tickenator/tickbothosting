@@ -150,7 +150,7 @@ async def spladdtime(ctx, *, content: str):
 async def splschedule(ctx):
     sheet = workbook.worksheet(verified_times)
 
-    cooldown = datetime.now() - timedelta(minutes=5)
+    cooldown = datetime.now() - timedelta(hours=8) - timedelta(minutes=5)
     last_run = datetime.strptime(sheet.cell(1, 3).value, "%Y-%m-%d %H:%M:%S")
 
     target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_name)
@@ -161,7 +161,7 @@ async def splschedule(ctx):
         response = sheet.cell(1, 4).value
         formatted = response.replace("\\n", "\n")
 
-        await ctx.send(formatted + "\n\n Cooldown timer: " + str(cooldown) + " Last run: " + str(last_run))
+        await ctx.send(formatted)
     else:
         await ctx.send("The schedule was updated less than 5 minutes ago. Please wait until " + sheet.cell(1, 6).value + " to use this command again.")
 
