@@ -61,8 +61,8 @@ async def spladdtime(ctx, *, content: str):
         vschecker = re.search(r' vs\.? ', line)
         timeregex = ''
         matchupssheet = workbook.worksheet("Info")
-        currentplayer1s = [v.upper() for v in workbook.worksheet(verified_times).col_values(6)]
-        currentplayer2s = [v.upper() for v in workbook.worksheet(verified_times).col_values(7)]
+        currentplayer1s = workbook.worksheet(verified_times).col_values(6)
+        currentplayer2s = workbook.worksheet(verified_times).col_values(7)
         target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_name)
         
         if vschecker is None:
@@ -75,15 +75,12 @@ async def spladdtime(ctx, *, content: str):
         if not validmatch:
             continue
 
-        weeklymatchups = [
-            [cell.upper() for cell in row]
-            for row in matchupssheet.get("D4:E63")
-        ]
+        weeklymatchups = list(matchupssheet.get("D4:E63"))
 
         rowcounter = 1
         for i in weeklymatchups:
             matchcounter = 0
-            if validmatch.group(2).upper() in i or validmatch.group(3).upper() in i:
+            if validmatch.group(2) in i or validmatch.group(3) in i:
                 isvalid = True
                 matchcounter += 1
                 rowcounter += 1
@@ -108,13 +105,13 @@ async def spladdtime(ctx, *, content: str):
         except ValueError:
             continue
 
-        if player1.upper() in currentplayer1s or player1.upper() in currentplayer2s:
+        if player1 in currentplayer1s or player1 in currentplayer2s:
             if target_role not in ctx.author.roles:
                 await ctx.send(f"You do not have permission to update existing entries: {line}. Please contact an SPL Host.")
                 invalid_update += 1
                 break
             else:
-                next_row = currentplayer1s.index(player1.upper()) + 2 if player1.upper() in currentplayer1s else currentplayer2s.index(player1.upper()) + 2
+                next_row = currentplayer1s.index(player1) + 2 if player1 in currentplayer1s else currentplayer2s.index(player1) + 2
                 updated += 1
         else:
             added += 1
