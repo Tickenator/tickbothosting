@@ -9,6 +9,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime, timezone, timedelta
 import time
+import webserver
 
 # Load environment variables
 load_dotenv()
@@ -26,13 +27,13 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 my_chat_id = 1445557463410671878
 spl_chat_id = 240776610276442113
 
-ANNOUNCE_CHANNEL_ID = my_chat_id  # replace with your channel ID
+ANNOUNCE_CHANNEL_ID = spl_chat_id  # replace with your channel ID
 bypass_role_name = "SPL Host"
 
 # ------------------ Google Sheets ------------------
 
 scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+creds = Credentials.from_service_account_file("/etc/secrets/credentials.json", scopes=scopes)
 client = gspread.authorize(creds)
 
 sheet_id = "1-BlPjtE4QTgrV_wSI7ZB_eNy2g7d1L956mom-aHozEQ"
@@ -44,7 +45,7 @@ rawdata_sheet = "SchedulingRawData"
 # ------------------ Commands ------------------
 
 @bot.command()
-@commands.has_any_role("SPL Host", "Team Manager", "Raiders", "Ruiners", "Scooters", "Bigs", "Classiest", "Cryonicles", "Sharks", "Tigers", "Tyrants", "Wolfpack")
+@commands.has_any_role("SPL Host", "Raiders", "Ruiners", "Scooters", "Bigs", "Classiest", "Cryonicles", "Sharks", "Tigers", "Tyrants", "Wolfpack")
 async def spladdtime(ctx, *, content: str):
     lines = [line.strip() for line in content.splitlines() if line.strip()]
 
@@ -63,7 +64,7 @@ async def spladdtime(ctx, *, content: str):
         currentplayer1s = [v.upper() for v in workbook.worksheet(verified_times).col_values(6)]
         currentplayer2s = [v.upper() for v in workbook.worksheet(verified_times).col_values(7)]
         target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_name)
-
+        
         if vschecker is None:
             timeregex = r'(([0-9A-Za-z _\-]+)( )(\d{4}/\d{1,2}/\d{1,2}) ([0-9:]{1,5}) ?([APM]{2}) ([\-\+\.0-9]+))'
         else:
@@ -106,7 +107,7 @@ async def spladdtime(ctx, *, content: str):
             date_obj = datetime.strptime(date_part, "%Y/%m/%d")
         except ValueError:
             continue
-        
+
         if player1.upper() in currentplayer1s or player1.upper() in currentplayer2s:
             if target_role not in ctx.author.roles:
                 await ctx.send(f"You do not have permission to update existing entries: {line}. Please contact an SPL Host.")
@@ -152,13 +153,11 @@ async def spladdtime(ctx, *, content: str):
 async def splschedule(ctx):
     sheet = workbook.worksheet(verified_times)
 
-    cooldown = datetime.now() - timedelta(minutes=5)
+    cooldown = datetime.now() - timedelta(hours=8) - timedelta(minutes=5)
     last_run = datetime.strptime(sheet.cell(1, 3).value, "%Y-%m-%d %H:%M:%S")
 
     target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_name)
 
-    print("Cooldown:", cooldown)
-    print("Last run:", last_run)
     if cooldown > last_run or target_role in ctx.author.roles:
         sheet.update_cell(1, 3, (datetime.now() - timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S"))
 
@@ -169,6 +168,17 @@ async def splschedule(ctx):
     else:
         await ctx.send("The schedule was updated less than 5 minutes ago. Please wait until " + sheet.cell(1, 6).value + " to use this command again.")
 
+@bot.command()
+@commands.has_role(bypass_role_name)
+async def splmissingtimes(ctx):
+    sheet = workbook.worksheet(verified_times)
+    response = sheet.cell(1, 7).value
+    formatted = response.replace("\\n", "\n")
+
+    if formatted.strip() == "":
+        await ctx.send("There are no missing times!")
+    else:
+        await ctx.send(formatted)
 
 @bot.command()
 @commands.has_role(bypass_role_name)
@@ -197,18 +207,6 @@ async def clearsplschedule(ctx):
 
 @bot.command()
 @commands.has_role(bypass_role_name)
-async def splmissingtimes(ctx):
-    sheet = workbook.worksheet(verified_times)
-    response = sheet.cell(1, 7).value
-    formatted = response.replace("\\n", "\n")
-
-    if formatted.strip() == "":
-        await ctx.send("There are no missing times!")
-    else:
-        await ctx.send(formatted)
-
-
-@bot.command()
 async def currentsplrecordsheet(ctx, *, content: str):
     sheet = workbook.worksheet(verified_times)
     sheet.update_cell(1, 2, content)
@@ -216,13 +214,14 @@ async def currentsplrecordsheet(ctx, *, content: str):
 
 
 @bot.command()
+@commands.has_any_role("SPL Host", "Team Manager", "Raiders", "Ruiners", "Scooters", "Bigs", "Classiest", "Cryonicles", "Sharks", "Tigers", "Tyrants", "Wolfpack")
 async def splcommands(ctx):
     await ctx.send(
         "**Available Commands:**\n"
-        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'. Example: `Player1 vs. Player2 2024/12/31 7:00 PM +2`\n"
+        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'.\n Example: `Player1 vs. Player2 2024/12/31 7:00 PM +2`\n Another example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
         "`!splschedule` - Shows the current schedule. There's a 5-minute cooldown, bypassed with the 'SPL Host' role.\n"
         "`!clearsplschedule` - Clears all scheduled times. 'SPL Host' role required.\n"
-        "`!currentrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n" \
+        "`!currentsplrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n" \
         "`!splmissingtimes` - Shows players with missing times. 'SPL Host' role required.\n"
     )
 
@@ -252,4 +251,5 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
     announce_upcoming_games.start()
 
+webserver.keep_alive()
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
