@@ -111,7 +111,7 @@ async def spladdtime(ctx, *, content: str):
                 invalid_update += 1
                 break
             else:
-                next_row = currentplayer1s.index(player1) + 2 if player1 in currentplayer1s else currentplayer2s.index(player1) + 2
+                next_row = currentplayer1s.index(player1) + 1 if player1 in currentplayer1s else currentplayer2s.index(player1) + 1
                 updated += 1
         else:
             added += 1
