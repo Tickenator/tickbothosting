@@ -228,7 +228,7 @@ async def splcommands(ctx):
 async def announce_upcoming_games():
     now = datetime.now(timezone.utc)
 
-    if not (45 <= now.minute <= 46):
+    if not (45 <= now.minute < 46):
         return
 
     channel = bot.get_channel(ANNOUNCE_CHANNEL_ID)
