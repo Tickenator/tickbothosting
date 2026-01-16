@@ -61,8 +61,8 @@ async def spladdtime(ctx, *, content: str):
         vschecker = re.search(r' vs\.? ', line)
         timeregex = ''
         matchupssheet = workbook.worksheet("Info")
-        currentplayer1s = workbook.worksheet(verified_times).col_values(6)
-        currentplayer2s = workbook.worksheet(verified_times).col_values(7)
+        currentplayer1s = workbook.worksheet(rawdata_sheet).col_values(6)
+        currentplayer2s = workbook.worksheet(rawdata_sheet).col_values(7)
         target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_name)
         
         if vschecker is None:
@@ -107,7 +107,7 @@ async def spladdtime(ctx, *, content: str):
 
         if player1 in currentplayer1s or player1 in currentplayer2s:
             if target_role not in ctx.author.roles:
-                await ctx.send(f"You do not have permission to update existing entries: {line}. Please contact an SPL Host.")
+                await ctx.send(f"You do not have permission to update the following entry: {line}.\nPlease contact an SPL Host.")
                 invalid_update += 1
                 break
             else:
