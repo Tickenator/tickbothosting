@@ -227,13 +227,19 @@ async def splcommands(ctx):
 @tasks.loop(minutes=1)
 async def announce_upcoming_games():
     now = datetime.now(timezone.utc)
-    channel = bot.get_channel(ANNOUNCE_CHANNEL_ID)
-    sheet = workbook.worksheet(verified_times)
-    response = sheet.cell(1, 5).value
 
-    if now.minute != 45:
+    if not (45 <= now.minute <= 46):
         return
-    
+
+    channel = bot.get_channel(ANNOUNCE_CHANNEL_ID)
+    if not channel:
+        return
+
+    # Run blocking Sheets call in a thread
+    response = await asyncio.to_thread(
+        lambda: workbook.worksheet(verified_times).cell(1, 5).value
+    )
+
     if not response:
         return
 
