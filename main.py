@@ -61,8 +61,8 @@ async def spladdtime(ctx, *, content: str):
         vschecker = re.search(r' vs\.? ', line)
         timeregex = ''
         matchupssheet = workbook.worksheet("Info")
-        currentplayer1s = workbook.worksheet(rawdata_sheet).col_values(6)
-        currentplayer2s = workbook.worksheet(rawdata_sheet).col_values(7)
+        currentplayer1s = workbook.worksheet(rawdata_sheet).col_values(5)
+        currentplayer2s = workbook.worksheet(rawdata_sheet).col_values(6)
         target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_name)
         
         if vschecker is None:
