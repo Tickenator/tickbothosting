@@ -252,7 +252,9 @@ async def announce_upcoming_games():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
-    announce_upcoming_games.start()
+
+    if not announce_upcoming_games.is_running():
+        announce_upcoming_games.start()
 
 webserver.keep_alive()
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
