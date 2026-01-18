@@ -231,7 +231,7 @@ async def announce_upcoming_games():
     if not (45 <= now.minute < 46):
         return
 
-    channel = bot.get_channel(ANNOUNCE_CHANNEL_ID)
+    channel = bot.get_channel(my_chat_id)
     if not channel:
         return
 
