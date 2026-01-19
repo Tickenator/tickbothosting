@@ -224,7 +224,7 @@ async def splcommands(ctx):
 
 # ------------------ Scheduled Announcements ------------------
 
-@tasks.loop(minutes=1)
+@tasks.loop(minutes=15)
 async def announce_upcoming_games():
     now = datetime.now(timezone.utc)
 
