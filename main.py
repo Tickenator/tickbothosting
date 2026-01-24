@@ -7,7 +7,7 @@ import asyncio
 import re
 import gspread
 from google.oauth2.service_account import Credentials
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, timezone, timedelta
 import time
 import webserver
 
@@ -42,6 +42,33 @@ workbook = client.open_by_key(sheet_id)
 verified_times = "Scheduling"
 rawdata_sheet = "SchedulingRawData"
 
+days_index = {
+        'monday': 0,
+        'tuesday': 1,
+        'wednesday': 2,
+        'thursday': 3,
+        'friday': 4,
+        'saturday': 5,
+        'sunday': 6
+    }
+
+#------------------ Helper Functions ------------------
+def get_date_from_weekday(content: str) -> date:
+    content = content.strip().lower()
+
+    if content not in days_index:
+        raise ValueError(f"Invalid weekday: {content}")
+
+    entered_index = days_index[content]
+    today_index = datetime.today().weekday()
+
+    today_date = date.today()
+
+    return today_date + timedelta(days=(entered_index - today_index) % 7)
+
+def is_weekday(content: str) -> bool:
+    return content.strip().lower() in days_index
+
 # ------------------ Commands ------------------
 
 @bot.command()
@@ -58,7 +85,7 @@ async def spladdtime(ctx, *, content: str):
     invalid_update = 0
 
     for line in lines:
-        vschecker = re.search(r' vs\.? ', line)
+        vschecker = re.search(r'day ', line)
         timeregex = ''
         matchupssheet = workbook.worksheet("Info")
         currentplayer1s = [v.upper() for v in workbook.worksheet(rawdata_sheet).col_values(5)]
@@ -68,7 +95,7 @@ async def spladdtime(ctx, *, content: str):
         if vschecker is None:
             timeregex = r'(([0-9A-Za-z _\-]+)( )(\d{4}/\d{1,2}/\d{1,2}) ([0-9:]{1,5}) ?([APM]{2}) ([\-\+\.0-9]+))'
         else:
-            timeregex = r'(([0-9A-Za-z _\-]+) vs\.? ([0-9A-Za-z _\-]+) (\d{4}/\d{1,2}/\d{1,2}) ([0-9:]{1,5}) ?([APM]{2}) ([\-\+\.0-9]+))'
+            timeregex = r'(([0-9A-Za-z _\-]+)( )([MTWFSa-z]+day) ([0-9:]{1,5}) ?([APM]{2}) ([\-\+\.0-9]+))'
         
         validmatch = re.search(timeregex, line)
 
@@ -99,7 +126,12 @@ async def spladdtime(ctx, *, content: str):
 
         player1 = validmatch.group(2)
         player2 = validmatch.group(3)
-        date_part = validmatch.group(4)
+
+        if is_weekday(validmatch.group(4)):
+            date_part = get_date_from_weekday(validmatch.group(4)).strftime("%Y/%m/%d")
+        else:
+            date_part = validmatch.group(4)
+
         timeofday = validmatch.group(5) + " " + validmatch.group(6)
         gmtchange = validmatch.group(7)
 
@@ -145,7 +177,7 @@ async def spladdtime(ctx, *, content: str):
         else:
             await ctx.send(
                 "No valid scheduling entries were found.\n"
-                "**Example:** `Player1 vs. Player2 2024/12/31 7:00 PM +2` or `Player1 2024/12/31 7PM +2`"
+                "**Example:** `Player1 Sunday 7:00 PM +2` or `Player1 2024/12/31 7PM +2`"
         )
 
 
@@ -218,7 +250,7 @@ async def currentsplrecordsheet(ctx, *, content: str):
 async def splcommands(ctx):
     await ctx.send(
         "**Available Commands:**\n"
-        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'.\n Example: `Player1 vs. Player2 2024/12/31 7:00 PM +2`\n Another example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
+        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'.\n Example: `Player1 Sunday 7:00 PM +2`\n Another example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
         "`!splschedule` - Shows the current schedule. There's a 5-minute cooldown, bypassed with the 'SPL Host' role.\n"
         "`!clearsplschedule` - Clears all scheduled times. 'SPL Host' role required.\n"
         "`!currentsplrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n" \
