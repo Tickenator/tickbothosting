@@ -28,7 +28,8 @@ my_chat_id = 1445557463410671878
 spl_chat_id = 240776610276442113
 
 ANNOUNCE_CHANNEL_ID = spl_chat_id  # replace with your channel ID
-bypass_role_name = "SPL Host"
+bypass_role_host = "SPL Host"
+bypass_role_manager = "Team Manager"
 
 # ------------------ Google Sheets ------------------
 
@@ -90,8 +91,9 @@ async def spladdtime(ctx, *, content: str):
         matchupssheet = workbook.worksheet("Info")
         currentplayer1s = [v.upper() for v in workbook.worksheet(rawdata_sheet).col_values(5)]
         currentplayer2s = [v.upper() for v in workbook.worksheet(rawdata_sheet).col_values(8)]
-        target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_name)
-        
+        target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_host)
+        manager_role = discord.utils.get(ctx.guild.roles, name=bypass_role_manager)
+
         if vschecker is None:
             timeregex = r'(([0-9A-Za-z _\-]+)( )(\d{4}/\d{1,2}/\d{1,2}) ([0-9:]{1,5}) ?([APM]{2}) ([\-\+\.0-9]+))'
         else:
@@ -141,8 +143,8 @@ async def spladdtime(ctx, *, content: str):
             continue
 
         if player1.upper() in currentplayer1s or player1.upper() in currentplayer2s:
-            if target_role not in ctx.author.roles:
-                await ctx.send(f"You do not have permission to update the following entry: {line}.\nPlease contact an SPL Host.")
+            if target_role not in ctx.author.roles and manager_role not in ctx.author.roles:
+                await ctx.send(f"You do not have permission to update the following entry: {line}.\nPlease contact an SPL Host or Team Manager.")
                 invalid_update += 1
                 break
             else:
@@ -158,10 +160,10 @@ async def spladdtime(ctx, *, content: str):
         sheet.update_cell(next_row, 6, player2)
         sheet.update_cell(next_row, 7, str(ctx.author))
 
-        if len(values_list) + 1 == next_row:
+        if len(values_list) + 1 + added == next_row:
             next_row += 1
         else:
-            next_row = len(values_list) + 1
+            next_row = len(values_list) + 1 + added
 
     if added or updated:
         if added and updated:
@@ -188,7 +190,7 @@ async def splschedule(ctx):
     cooldown = datetime.now() - timedelta(hours=8) - timedelta(minutes=5)
     last_run = datetime.strptime(sheet.cell(1, 3).value, "%Y-%m-%d %H:%M:%S")
 
-    target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_name)
+    target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_host)
 
     if cooldown > last_run or target_role in ctx.author.roles:
         sheet.update_cell(1, 3, (datetime.now() - timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S"))
@@ -201,7 +203,7 @@ async def splschedule(ctx):
         await ctx.send("The schedule was updated less than 5 minutes ago. Please wait until " + sheet.cell(1, 6).value + " to use this command again.")
 
 @bot.command()
-@commands.has_role(bypass_role_name)
+@commands.has_role(bypass_role_host)
 async def splmissingtimes(ctx):
     sheet = workbook.worksheet(verified_times)
     response = sheet.cell(1, 7).value
@@ -213,7 +215,7 @@ async def splmissingtimes(ctx):
         await ctx.send(formatted)
 
 @bot.command()
-@commands.has_role(bypass_role_name)
+@commands.has_role(bypass_role_host)
 async def clearsplschedule(ctx):
     sheet = workbook.worksheet(rawdata_sheet)
 
@@ -238,7 +240,7 @@ async def clearsplschedule(ctx):
 
 
 @bot.command()
-@commands.has_role(bypass_role_name)
+@commands.has_role(bypass_role_host)
 async def currentsplrecordsheet(ctx, *, content: str):
     sheet = workbook.worksheet(verified_times)
     sheet.update_cell(1, 2, content)
@@ -250,7 +252,7 @@ async def currentsplrecordsheet(ctx, *, content: str):
 async def splcommands(ctx):
     await ctx.send(
         "**Available Commands:**\n"
-        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host'.\n Example: `Player1 Sunday 7:00 PM +2`\n Another example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
+        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host' or 'Team Manager'.\n Example: `Player1 Sunday 7:00 PM +2`\n Another example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
         "`!splschedule` - Shows the current schedule. There's a 5-minute cooldown, bypassed with the 'SPL Host' role.\n"
         "`!clearsplschedule` - Clears all scheduled times. 'SPL Host' role required.\n"
         "`!currentsplrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n" \
