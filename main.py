@@ -38,10 +38,13 @@ creds = Credentials.from_service_account_file("/etc/secrets/credentials.json", s
 client = gspread.authorize(creds)
 
 sheet_id = "1-BlPjtE4QTgrV_wSI7ZB_eNy2g7d1L956mom-aHozEQ"
+predictions_sheet_id = "10PJyTIHBd3DZR0hbLtIWl98VD96E4kSmowjPGvVIe60"
 workbook = client.open_by_key(sheet_id)
+predictions_workbook = client.open_by_key(predictions_sheet_id)
 
 verified_times = "Scheduling"
 rawdata_sheet = "SchedulingRawData"
+temp_predictions_pastses = "Tester"
 
 days_index = {
         'monday': 0,
@@ -184,10 +187,10 @@ async def spladdtime(ctx, *, content: str):
 
 
 @bot.command()
-async def splschedule(ctx):
+async def splschedule(ctx, content: str = 'ALL'):
     sheet = workbook.worksheet(verified_times)
 
-    cooldown = datetime.now() - timedelta(hours=8) - timedelta(minutes=5)
+    cooldown = datetime.now() - timedelta(minutes=5)
     last_run = datetime.strptime(sheet.cell(1, 3).value, "%Y-%m-%d %H:%M:%S")
 
     target_role = discord.utils.get(ctx.guild.roles, name=bypass_role_host)
@@ -197,8 +200,21 @@ async def splschedule(ctx):
 
         response = sheet.cell(1, 4).value
         formatted = response.replace("\\n", "\n")
+        format_indexes = [v.upper() for v in workbook.worksheet(verified_times).col_values(12)]
 
-        await ctx.send(formatted)
+        if content.lower() == 'all':
+            await ctx.send(formatted)
+        else:
+            if content.upper() in format_indexes:
+                pasteindex = format_indexes.index(content.upper())
+                specific_response = sheet.cell(pasteindex + 1, 13).value
+
+                if specific_response:
+                    await ctx.send(specific_response.replace("\\n", "\n"))
+                else:
+                    await ctx.send(f"There are no upcoming scheduled times for {content}.")
+            else:                 
+                await ctx.send(f"No schedule found for {content}. Please check the spelling and try again.")
     else:
         await ctx.send("The schedule was updated less than 5 minutes ago. Please wait until " + sheet.cell(1, 6).value + " to use this command again.")
 
@@ -248,15 +264,58 @@ async def currentsplrecordsheet(ctx, *, content: str):
 
 
 @bot.command()
+async def splpredictions(ctx):
+    prediction_indexes = [v.upper() for v in predictions_workbook.worksheet(temp_predictions_pastses).col_values(7)]
+    sheet = predictions_workbook.worksheet(temp_predictions_pastses)
+
+    if ctx.author.name.upper() in prediction_indexes:
+        index = prediction_indexes.index(ctx.author.name.upper()) + 1
+        response = sheet.cell(index, 8).value
+
+        if response:
+            formatted = response.replace("\\n", "\n")
+            await ctx.author.send(f"{formatted}")
+        else:
+            await ctx.author.send("You have not submitted any predictions with your Discord tag.")
+    else:
+        await ctx.author.send("You have not submitted any predictions with your Discord tag.")
+    await ctx.message.delete()
+
+
+@bot.command()
+async def fullsplpredictions(ctx):
+    prediction_indexes = [v.upper() for v in predictions_workbook.worksheet(temp_predictions_pastses).col_values(7)]
+    sheet = predictions_workbook.worksheet(temp_predictions_pastses)
+
+    if ctx.author.name.upper() in prediction_indexes:
+        index = prediction_indexes.index(ctx.author.name.upper()) + 1
+        response = sheet.cell(index, 9).value
+
+        if response:
+            formatted = response.replace("\\n", "\n")
+            await ctx.author.send(f"{formatted}")
+        else:
+            await ctx.author.send("You have not submitted any predictions with your Discord tag.")
+    else:
+        await ctx.author.send("You have not submitted any predictions with your Discord tag.")
+    await ctx.message.delete()
+
+
+@bot.command()
 @commands.has_any_role("SPL Host", "Team Manager", "Raiders", "Ruiners", "Scooters", "Bigs", "Classiest", "Cryonicles", "Sharks", "Tigers", "Tyrants", "Wolfpack")
 async def splcommands(ctx):
     await ctx.send(
         "**Available Commands:**\n"
-        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host' or 'Team Manager'.\n Example: `Player1 Sunday 7:00 PM +2`\n Another example: `Player1 2024/12/31 7PM +2`\n One entry per line.\n Only users with team roles or 'SPL Host' can use this command.\n"
+        "Anyone!\n"
         "`!splschedule` - Shows the current schedule. There's a 5-minute cooldown, bypassed with the 'SPL Host' role.\n"
-        "`!clearsplschedule` - Clears all scheduled times. 'SPL Host' role required.\n"
-        "`!currentsplrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n" \
+        "`!splpredictions` - Displays all of your predicted winners for the current week.\n"
+        "`!fullsplpredictions` - Displays the full schedule with your predicted winners. RECOMMENDED TO VIEW ON DESKTOP, NOT MOBILE.\n\n"
+        
+        "Team Managers and SPL Hosts!\n"
+        "`!spladdtime` - Add scheduling times and updates existing times if used by 'SPL Host' or 'Team Manager'. Example: `Player1 vs. Player2 2024/12/31 7:00 PM +2`\n"
+        "`!currentrecordsheet <link>` - Updates the current records link. 'SPL Host' role required.\n"
         "`!splmissingtimes` - Shows players with missing times. 'SPL Host' role required.\n"
+        "`!clearsplschedule` - Clears all scheduled times. 'SPL Host' role required.\n"
     )
 
 # ------------------ Scheduled Announcements ------------------
